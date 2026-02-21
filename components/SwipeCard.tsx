@@ -7,9 +7,11 @@ import {
     Dimensions,
     ImageBackground,
     Pressable,
+    Share,
+    Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Bookmark } from 'lucide-react-native';
+import { Bookmark, Share2 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useFeedStore, type Article } from '../store/feedStore';
 
@@ -46,6 +48,19 @@ function SwipeCard({ article, stackIndex }: SwipeCardProps) {
         toggleBookmark(article);
     };
 
+    const handleShare = async () => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        try {
+            await Share.share({
+                title: article.title,
+                message: `${article.title}\n\n${article.article_url}`,
+                ...(Platform.OS === 'ios' && article.article_url ? { url: article.article_url } : {}),
+            });
+        } catch (error) {
+            console.error('Error sharing:', error);
+        }
+    };
+
     return (
         <View style={[styles.card, isTopCard && styles.cardShadow]}>
             {article.image_url ? (
@@ -80,6 +95,10 @@ function SwipeCard({ article, stackIndex }: SwipeCardProps) {
                     </LinearGradient>
                 </View>
             )}
+
+            <Pressable style={styles.shareButton} onPress={handleShare}>
+                <Share2 size={24} color="#ffffff" />
+            </Pressable>
 
             <Pressable style={styles.bookmarkButton} onPress={handleBookmark}>
                 <Bookmark
@@ -182,6 +201,18 @@ const styles = StyleSheet.create({
     },
     fallbackBg: {
         backgroundColor: '#1a1a2e',
+    },
+    shareButton: {
+        position: 'absolute',
+        top: 20,
+        left: 20,
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: 'rgba(0,0,0,0.4)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 10,
     },
     bookmarkButton: {
         position: 'absolute',
