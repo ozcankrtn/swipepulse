@@ -6,20 +6,30 @@ import {
     StyleSheet,
     Pressable,
     StatusBar,
+    ScrollView,
 } from 'react-native';
+
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from '../lib/supabase';
 import { useFeedStore, type Article } from '../store/feedStore';
 import SwipeDeck from '../components/SwipeDeck';
 
+const CATEGORIES = [
+    { id: 'news', label: 'News' },
+    { id: 'culture', label: 'Culture' },
+    { id: 'sport', label: 'Sport' },
+    { id: 'technology', label: 'Technology' },
+] as const;
+
 // ── Supabase fetch ────────────────────────────────────────────────────────
-async function fetchArticles(): Promise<Article[]> {
+async function fetchArticles(category: string): Promise<Article[]> {
     const { data, error } = await supabase
         .from('articles')
         .select(
             'id, title, image_url, article_url, source_name, source_logo_url, category, published_at, is_active',
         )
         .eq('is_active', true)
+        .eq('category', category)
         .order('published_at', { ascending: false })
         .limit(30);
 
@@ -29,14 +39,14 @@ async function fetchArticles(): Promise<Article[]> {
 
 // ── Screen ────────────────────────────────────────────────────────────────
 export default function HomeScreen() {
-    const { articles, currentIndex, isLoading, error, setArticles, setLoading, setError, swipeLeft, swipeRight, reset } =
+    const { articles, currentIndex, isLoading, error, setArticles, setLoading, setError, swipeLeft, swipeRight, reset, currentCategory, setCategory } =
         useFeedStore();
 
     const loadFeed = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
-            const data = await fetchArticles();
+            const data = await fetchArticles(currentCategory);
             setArticles(data);
         } catch (err) {
             const message = err instanceof Error ? err.message : 'Something went wrong';
@@ -44,7 +54,7 @@ export default function HomeScreen() {
         } finally {
             setLoading(false);
         }
-    }, [setArticles, setError, setLoading]);
+    }, [currentCategory, setArticles, setError, setLoading]);
 
     useEffect(() => {
         loadFeed();
@@ -66,6 +76,34 @@ export default function HomeScreen() {
                         ? `${Math.max(0, articles.length - currentIndex)} left`
                         : ''}
                 </Text>
+            </View>
+
+            {/* ── Category Tabs ── */}
+            <View style={styles.tabsContainer}>
+                <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.tabsContent}
+                >
+                    {CATEGORIES.map((cat) => {
+                        const isActive = currentCategory === cat.id;
+                        return (
+                            <Pressable
+                                key={cat.id}
+                                style={[styles.tab, isActive && styles.tabActive]}
+                                onPress={() => {
+                                    if (!isActive) {
+                                        setCategory(cat.id);
+                                    }
+                                }}
+                            >
+                                <Text style={[styles.tabText, isActive && styles.tabTextActive]}>
+                                    {cat.label}
+                                </Text>
+                            </Pressable>
+                        );
+                    })}
+                </ScrollView>
             </View>
 
             {/* ── Content area ── */}
@@ -158,6 +196,32 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         paddingBottom: 32,
+    },
+
+    // ── Category Tabs
+    tabsContainer: {
+        marginBottom: 16,
+    },
+    tabsContent: {
+        paddingHorizontal: 24,
+        gap: 12,
+    },
+    tab: {
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 20,
+        backgroundColor: 'transparent',
+    },
+    tabActive: {
+        backgroundColor: '#ffffff',
+    },
+    tabText: {
+        fontSize: 15,
+        fontWeight: '600',
+        color: '#888',
+    },
+    tabTextActive: {
+        color: '#0a0a0f',
     },
 
     // ── Shared center states

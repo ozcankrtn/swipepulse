@@ -18,6 +18,8 @@ interface FeedState {
     currentIndex: number;
     isLoading: boolean;
     error: string | null;
+    currentCategory: 'news' | 'culture' | 'sport' | 'technology';
+    setCategory: (category: 'news' | 'culture' | 'sport' | 'technology') => void;
     setArticles: (articles: Article[]) => void;
     swipeRight: () => void;
     swipeLeft: () => void;
@@ -31,6 +33,8 @@ export const useFeedStore = create<FeedState>((set) => ({
     currentIndex: 0,
     isLoading: false,
     error: null,
+    currentCategory: 'news',
+    setCategory: (category) => set({ currentCategory: category, articles: [], currentIndex: 0, error: null }),
     setArticles: (articles) => set({ articles, currentIndex: 0 }),
     swipeRight: () => set((state) => ({ currentIndex: state.currentIndex + 1 })),
     swipeLeft: () => set((state) => ({ currentIndex: state.currentIndex + 1 })),
