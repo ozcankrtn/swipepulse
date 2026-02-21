@@ -14,7 +14,7 @@ import { supabase } from '../lib/supabase';
 import { useFeedStore, type Article } from '../store/feedStore';
 import SwipeDeck from '../components/SwipeDeck';
 import { useRouter } from 'expo-router';
-import { Bookmark } from 'lucide-react-native';
+import { Bookmark, Settings } from 'lucide-react-native';
 
 const CATEGORIES = [
     { id: 'news', label: 'News' },
@@ -48,7 +48,7 @@ async function fetchArticles(category: string, seenIds: Set<string>): Promise<Ar
 // ── Screen ────────────────────────────────────────────────────────────────
 export default function HomeScreen() {
     const router = useRouter();
-    const { articles, currentIndex, isLoading, error, setArticles, setLoading, setError, swipeLeft, swipeRight, reset, currentCategory, setCategory, clearSeenForCategory, loadBookmarks } =
+    const { articles, currentIndex, isLoading, error, setArticles, setLoading, setError, swipeLeft, swipeRight, reset, currentCategory, setCategory, clearSeenForCategory, initialize } =
         useFeedStore();
 
     const loadFeed = useCallback(async () => {
@@ -67,9 +67,12 @@ export default function HomeScreen() {
     }, [currentCategory, setArticles, setError, setLoading]);
 
     useEffect(() => {
+        initialize();
+    }, [initialize]);
+
+    useEffect(() => {
         loadFeed();
-        loadBookmarks();
-    }, [loadFeed, loadBookmarks]);
+    }, [currentCategory, loadFeed]);
 
     const isDeckEmpty = !isLoading && articles.length > 0 && currentIndex >= articles.length;
     const hasArticles = articles.length > 0;
@@ -81,6 +84,12 @@ export default function HomeScreen() {
 
             {/* ── Header ── */}
             <View style={styles.header}>
+                <Pressable
+                    style={styles.headerIcon}
+                    onPress={() => router.push('/settings')}
+                >
+                    <Settings size={24} color="#ffffff" strokeWidth={2.5} />
+                </Pressable>
                 <Text style={styles.logo}>SwipePulse</Text>
                 <View style={styles.headerRight}>
                     <Text style={styles.subInfo}>
@@ -218,6 +227,13 @@ const styles = StyleSheet.create({
     },
     headerBookmark: {
         opacity: 0.9,
+    },
+    headerIcon: {
+        opacity: 0.9,
+        width: 40,
+        height: 40,
+        justifyContent: 'center',
+        alignItems: 'flex-start',
     },
     content: {
         flex: 1,

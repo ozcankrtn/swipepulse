@@ -21,8 +21,10 @@ interface FeedState {
     isLoading: boolean;
     error: string | null;
     currentCategory: 'news' | 'culture' | 'sport' | 'technology';
+    defaultCategory: 'news' | 'culture' | 'sport' | 'technology';
     seenArticleIds: Record<string, Set<string>>;
     setCategory: (category: 'news' | 'culture' | 'sport' | 'technology') => void;
+    setDefaultCategory: (category: 'news' | 'culture' | 'sport' | 'technology') => Promise<void>;
     setArticles: (articles: Article[]) => void;
     swipeRight: () => void;
     swipeLeft: () => void;
@@ -30,12 +32,15 @@ interface FeedState {
     setError: (error: string | null) => void;
     reset: () => void;
     clearSeenForCategory: (category: string) => void;
+    clearAllSeen: () => void;
 
     // Bookmarks
     bookmarks: Article[];
     toggleBookmark: (article: Article) => void;
     isBookmarked: (articleId: string) => boolean;
     loadBookmarks: () => Promise<void>;
+    clearBookmarks: () => Promise<void>;
+    initialize: () => Promise<void>;
 }
 
 function generateSessionId(): string {
@@ -72,6 +77,7 @@ export const useFeedStore = create<FeedState>((set, get) => ({
     isLoading: false,
     error: null,
     currentCategory: 'news',
+    defaultCategory: 'news',
     seenArticleIds: {
         news: new Set(),
         culture: new Set(),
@@ -80,6 +86,14 @@ export const useFeedStore = create<FeedState>((set, get) => ({
     },
     bookmarks: [],
     setCategory: (category) => set({ currentCategory: category, articles: [], currentIndex: 0, error: null }),
+    setDefaultCategory: async (category) => {
+        try {
+            await AsyncStorage.setItem('default_category', category);
+            set({ defaultCategory: category });
+        } catch (err) {
+            console.warn('Failed to save default category:', err);
+        }
+    },
     setArticles: (articles) => set({ articles, currentIndex: 0 }),
     swipeRight: () => set((state) => {
         const article = state.articles[state.currentIndex];
@@ -113,6 +127,14 @@ export const useFeedStore = create<FeedState>((set, get) => ({
     clearSeenForCategory: (category) => set((state) => ({
         seenArticleIds: { ...state.seenArticleIds, [category]: new Set() }
     })),
+    clearAllSeen: () => set({
+        seenArticleIds: {
+            news: new Set(),
+            culture: new Set(),
+            sport: new Set(),
+            technology: new Set(),
+        }
+    }),
     toggleBookmark: (article) => set((state) => {
         const isBookmarked = state.bookmarks.some((b) => b.id === article.id);
         const newBookmarks = isBookmarked
@@ -136,6 +158,37 @@ export const useFeedStore = create<FeedState>((set, get) => ({
             }
         } catch (err) {
             console.warn('Failed to load bookmarks:', err);
+        }
+    },
+    clearBookmarks: async () => {
+        try {
+            await AsyncStorage.removeItem('swipepulse_bookmarks');
+            set({ bookmarks: [] });
+        } catch (err) {
+            console.warn('Failed to clear bookmarks:', err);
+        }
+    },
+    initialize: async () => {
+        try {
+            const [defCat, bookmarksData] = await Promise.all([
+                AsyncStorage.getItem('default_category'),
+                AsyncStorage.getItem('swipepulse_bookmarks')
+            ]);
+
+            const updates: Partial<FeedState> = {};
+
+            if (defCat) {
+                updates.defaultCategory = defCat as any;
+                updates.currentCategory = defCat as any;
+            }
+
+            if (bookmarksData) {
+                updates.bookmarks = JSON.parse(bookmarksData);
+            }
+
+            set(updates);
+        } catch (err) {
+            console.warn('Failed to initialize store:', err);
         }
     },
 }));
