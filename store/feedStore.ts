@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { supabase } from '../lib/supabase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export interface Article {
     id: string;
@@ -29,6 +30,12 @@ interface FeedState {
     setError: (error: string | null) => void;
     reset: () => void;
     clearSeenForCategory: (category: string) => void;
+
+    // Bookmarks
+    bookmarks: Article[];
+    toggleBookmark: (article: Article) => void;
+    isBookmarked: (articleId: string) => boolean;
+    loadBookmarks: () => Promise<void>;
 }
 
 function generateSessionId(): string {
@@ -59,7 +66,7 @@ const trackInteraction = async (articleId: string, action: 'swipe_left' | 'swipe
     }
 };
 
-export const useFeedStore = create<FeedState>((set) => ({
+export const useFeedStore = create<FeedState>((set, get) => ({
     articles: [],
     currentIndex: 0,
     isLoading: false,
@@ -71,6 +78,7 @@ export const useFeedStore = create<FeedState>((set) => ({
         sport: new Set(),
         technology: new Set(),
     },
+    bookmarks: [],
     setCategory: (category) => set({ currentCategory: category, articles: [], currentIndex: 0, error: null }),
     setArticles: (articles) => set({ articles, currentIndex: 0 }),
     swipeRight: () => set((state) => {
@@ -105,4 +113,29 @@ export const useFeedStore = create<FeedState>((set) => ({
     clearSeenForCategory: (category) => set((state) => ({
         seenArticleIds: { ...state.seenArticleIds, [category]: new Set() }
     })),
+    toggleBookmark: (article) => set((state) => {
+        const isBookmarked = state.bookmarks.some((b) => b.id === article.id);
+        const newBookmarks = isBookmarked
+            ? state.bookmarks.filter((b) => b.id !== article.id)
+            : [...state.bookmarks, article];
+
+        AsyncStorage.setItem('swipepulse_bookmarks', JSON.stringify(newBookmarks)).catch((err) =>
+            console.warn('Failed to save bookmarks:', err)
+        );
+
+        return { bookmarks: newBookmarks };
+    }),
+    isBookmarked: (articleId: string) => {
+        return get().bookmarks.some((b: Article) => b.id === articleId);
+    },
+    loadBookmarks: async () => {
+        try {
+            const data = await AsyncStorage.getItem('swipepulse_bookmarks');
+            if (data) {
+                set({ bookmarks: JSON.parse(data) });
+            }
+        } catch (err) {
+            console.warn('Failed to load bookmarks:', err);
+        }
+    },
 }));

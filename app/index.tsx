@@ -13,6 +13,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from '../lib/supabase';
 import { useFeedStore, type Article } from '../store/feedStore';
 import SwipeDeck from '../components/SwipeDeck';
+import { useRouter } from 'expo-router';
+import { Bookmark } from 'lucide-react-native';
 
 const CATEGORIES = [
     { id: 'news', label: 'News' },
@@ -45,7 +47,8 @@ async function fetchArticles(category: string, seenIds: Set<string>): Promise<Ar
 
 // ── Screen ────────────────────────────────────────────────────────────────
 export default function HomeScreen() {
-    const { articles, currentIndex, isLoading, error, setArticles, setLoading, setError, swipeLeft, swipeRight, reset, currentCategory, setCategory, clearSeenForCategory } =
+    const router = useRouter();
+    const { articles, currentIndex, isLoading, error, setArticles, setLoading, setError, swipeLeft, swipeRight, reset, currentCategory, setCategory, clearSeenForCategory, loadBookmarks } =
         useFeedStore();
 
     const loadFeed = useCallback(async () => {
@@ -65,7 +68,8 @@ export default function HomeScreen() {
 
     useEffect(() => {
         loadFeed();
-    }, [loadFeed]);
+        loadBookmarks();
+    }, [loadFeed, loadBookmarks]);
 
     const isDeckEmpty = !isLoading && articles.length > 0 && currentIndex >= articles.length;
     const hasArticles = articles.length > 0;
@@ -78,11 +82,19 @@ export default function HomeScreen() {
             {/* ── Header ── */}
             <View style={styles.header}>
                 <Text style={styles.logo}>SwipePulse</Text>
-                <Text style={styles.subInfo}>
-                    {hasArticles && !isDeckEmpty
-                        ? `${Math.max(0, articles.length - currentIndex)} left`
-                        : ''}
-                </Text>
+                <View style={styles.headerRight}>
+                    <Text style={styles.subInfo}>
+                        {hasArticles && !isDeckEmpty
+                            ? `${Math.max(0, articles.length - currentIndex)} left`
+                            : ''}
+                    </Text>
+                    <Pressable
+                        style={styles.headerBookmark}
+                        onPress={() => router.push('/bookmarks')}
+                    >
+                        <Bookmark size={24} color="#ffffff" strokeWidth={2.5} />
+                    </Pressable>
+                </View>
             </View>
 
             {/* ── Category Tabs ── */}
@@ -198,6 +210,14 @@ const styles = StyleSheet.create({
         fontSize: 13,
         color: '#6366f1',
         fontWeight: '600',
+    },
+    headerRight: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 16,
+    },
+    headerBookmark: {
+        opacity: 0.9,
     },
     content: {
         flex: 1,

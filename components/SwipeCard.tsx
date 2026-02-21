@@ -6,9 +6,12 @@ import {
     StyleSheet,
     Dimensions,
     ImageBackground,
+    Pressable,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import type { Article } from '../store/feedStore';
+import { Bookmark } from 'lucide-react-native';
+import * as Haptics from 'expo-haptics';
+import { useFeedStore, type Article } from '../store/feedStore';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -34,6 +37,14 @@ function SwipeCard({ article, stackIndex }: SwipeCardProps) {
         article.category ? (CATEGORY_COLORS[article.category] ?? '#555') : '#555';
 
     const isTopCard = stackIndex === 0;
+
+    const isBookmarked = useFeedStore((state) => state.bookmarks.some((b) => b.id === article.id));
+    const toggleBookmark = useFeedStore((state) => state.toggleBookmark);
+
+    const handleBookmark = () => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        toggleBookmark(article);
+    };
 
     return (
         <View style={[styles.card, isTopCard && styles.cardShadow]}>
@@ -69,6 +80,14 @@ function SwipeCard({ article, stackIndex }: SwipeCardProps) {
                     </LinearGradient>
                 </View>
             )}
+
+            <Pressable style={styles.bookmarkButton} onPress={handleBookmark}>
+                <Bookmark
+                    size={24}
+                    color="#ffffff"
+                    fill={isBookmarked ? "#ffffff" : "transparent"}
+                />
+            </Pressable>
         </View>
     );
 }
@@ -163,6 +182,18 @@ const styles = StyleSheet.create({
     },
     fallbackBg: {
         backgroundColor: '#1a1a2e',
+    },
+    bookmarkButton: {
+        position: 'absolute',
+        top: 20,
+        right: 20,
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: 'rgba(0,0,0,0.4)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 10,
     },
     gradient: {
         flex: 1,
