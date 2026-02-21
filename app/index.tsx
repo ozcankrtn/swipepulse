@@ -22,8 +22,8 @@ const CATEGORIES = [
 ] as const;
 
 // ── Supabase fetch ────────────────────────────────────────────────────────
-async function fetchArticles(category: string): Promise<Article[]> {
-    const { data, error } = await supabase
+async function fetchArticles(category: string, seenIds: Set<string>): Promise<Article[]> {
+    let query = supabase
         .from('articles')
         .select(
             'id, title, image_url, article_url, source_name, source_logo_url, category, published_at, is_active',
@@ -33,20 +33,27 @@ async function fetchArticles(category: string): Promise<Article[]> {
         .order('published_at', { ascending: false })
         .limit(30);
 
+    if (seenIds.size > 0) {
+        const seenArray = Array.from(seenIds);
+        query = query.not('id', 'in', `(${seenArray.join(',')})`);
+    }
+
+    const { data, error } = await query;
     if (error) throw new Error(error.message);
     return (data ?? []) as Article[];
 }
 
 // ── Screen ────────────────────────────────────────────────────────────────
 export default function HomeScreen() {
-    const { articles, currentIndex, isLoading, error, setArticles, setLoading, setError, swipeLeft, swipeRight, reset, currentCategory, setCategory } =
+    const { articles, currentIndex, isLoading, error, setArticles, setLoading, setError, swipeLeft, swipeRight, reset, currentCategory, setCategory, clearSeenForCategory } =
         useFeedStore();
 
     const loadFeed = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
-            const data = await fetchArticles(currentCategory);
+            const currentSeen = useFeedStore.getState().seenArticleIds[currentCategory] || new Set<string>();
+            const data = await fetchArticles(currentCategory, currentSeen);
             setArticles(data);
         } catch (err) {
             const message = err instanceof Error ? err.message : 'Something went wrong';
@@ -140,6 +147,7 @@ export default function HomeScreen() {
                         <Pressable
                             style={styles.refreshButton}
                             onPress={() => {
+                                clearSeenForCategory(currentCategory);
                                 reset();
                                 loadFeed();
                             }}

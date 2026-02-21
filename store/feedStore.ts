@@ -20,6 +20,7 @@ interface FeedState {
     isLoading: boolean;
     error: string | null;
     currentCategory: 'news' | 'culture' | 'sport' | 'technology';
+    seenArticleIds: Record<string, Set<string>>;
     setCategory: (category: 'news' | 'culture' | 'sport' | 'technology') => void;
     setArticles: (articles: Article[]) => void;
     swipeRight: () => void;
@@ -27,6 +28,7 @@ interface FeedState {
     setLoading: (loading: boolean) => void;
     setError: (error: string | null) => void;
     reset: () => void;
+    clearSeenForCategory: (category: string) => void;
 }
 
 function generateSessionId(): string {
@@ -63,12 +65,24 @@ export const useFeedStore = create<FeedState>((set) => ({
     isLoading: false,
     error: null,
     currentCategory: 'news',
+    seenArticleIds: {
+        news: new Set(),
+        culture: new Set(),
+        sport: new Set(),
+        technology: new Set(),
+    },
     setCategory: (category) => set({ currentCategory: category, articles: [], currentIndex: 0, error: null }),
     setArticles: (articles) => set({ articles, currentIndex: 0 }),
     swipeRight: () => set((state) => {
         const article = state.articles[state.currentIndex];
         if (article) {
             trackInteraction(article.id, 'swipe_right');
+            const newSeen = new Set(state.seenArticleIds[state.currentCategory]);
+            newSeen.add(article.id);
+            return {
+                currentIndex: state.currentIndex + 1,
+                seenArticleIds: { ...state.seenArticleIds, [state.currentCategory]: newSeen }
+            };
         }
         return { currentIndex: state.currentIndex + 1 };
     }),
@@ -76,10 +90,19 @@ export const useFeedStore = create<FeedState>((set) => ({
         const article = state.articles[state.currentIndex];
         if (article) {
             trackInteraction(article.id, 'swipe_left');
+            const newSeen = new Set(state.seenArticleIds[state.currentCategory]);
+            newSeen.add(article.id);
+            return {
+                currentIndex: state.currentIndex + 1,
+                seenArticleIds: { ...state.seenArticleIds, [state.currentCategory]: newSeen }
+            };
         }
         return { currentIndex: state.currentIndex + 1 };
     }),
     setLoading: (isLoading) => set({ isLoading }),
     setError: (error) => set({ error }),
     reset: () => set({ articles: [], currentIndex: 0, isLoading: false, error: null }),
+    clearSeenForCategory: (category) => set((state) => ({
+        seenArticleIds: { ...state.seenArticleIds, [category]: new Set() }
+    })),
 }));
