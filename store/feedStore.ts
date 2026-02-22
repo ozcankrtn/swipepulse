@@ -15,6 +15,8 @@ export interface Article {
     is_active: boolean;
 }
 
+import { User } from '@supabase/supabase-js';
+
 interface FeedState {
     articles: Article[];
     currentIndex: number;
@@ -41,6 +43,8 @@ interface FeedState {
     loadBookmarks: () => Promise<void>;
     clearBookmarks: () => Promise<void>;
     initialize: () => Promise<void>;
+    user: User | null;
+    setUser: (user: User | null) => void;
 }
 
 function generateSessionId(): string {
@@ -58,7 +62,7 @@ const trackInteraction = async (articleId: string, action: 'swipe_left' | 'swipe
         const { error } = await supabase.from('user_interactions').insert({
             article_id: articleId,
             action,
-            user_id: null,
+            user_id: useFeedStore.getState().user?.id ?? null,
             session_id: sessionId,
             interacted_at: new Date().toISOString(),
         });
@@ -86,6 +90,8 @@ export const useFeedStore = create<FeedState>((set, get) => ({
         technology: new Set(),
     },
     bookmarks: [],
+    user: null,
+    setUser: (user) => set({ user }),
     setCategory: (category) => set({ currentCategory: category, articles: [], currentIndex: 0, error: null }),
     setDefaultCategory: async (category) => {
         try {
@@ -189,6 +195,16 @@ export const useFeedStore = create<FeedState>((set, get) => ({
             }
 
             set(updates);
+
+            // Fetch initial session
+            const { data: { session } } = await supabase.auth.getSession();
+            set({ user: session?.user ?? null });
+
+            // Listen for auth changes
+            supabase.auth.onAuthStateChange((_event, session) => {
+                set({ user: session?.user ?? null });
+            });
+
         } catch (err) {
             console.warn('Failed to initialize store:', err);
         }

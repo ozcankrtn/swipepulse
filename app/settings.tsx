@@ -19,8 +19,11 @@ import {
     Bookmark,
     LayoutList,
     ShieldCheck,
-    Info
+    Info,
+    UserCircle,
+    LogOut
 } from 'lucide-react-native';
+import { supabase } from '../lib/supabase';
 import { useFeedStore } from '../store/feedStore';
 
 const CATEGORY_OPTIONS = [
@@ -34,11 +37,31 @@ const CATEGORY_OPTIONS = [
 export default function SettingsScreen() {
     const router = useRouter();
     const {
-        defaultCategory,
-        setDefaultCategory,
         clearAllSeen,
-        clearBookmarks
+        clearBookmarks,
+        user,
+        setUser,
+        defaultCategory,
+        setDefaultCategory
     } = useFeedStore();
+
+    const handleSignOut = async () => {
+        Alert.alert(
+            'Sign Out',
+            'Are you sure you want to sign out?',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Sign Out',
+                    style: 'destructive',
+                    onPress: async () => {
+                        await supabase.auth.signOut();
+                        setUser(null);
+                    }
+                }
+            ]
+        );
+    };
 
     const handleCategoryPress = () => {
         if (Platform.OS === 'ios') {
@@ -239,6 +262,11 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#ffffff',
         fontWeight: '500',
+    },
+    rowSublabel: {
+        fontSize: 14,
+        color: '#888',
+        marginTop: 2,
     },
     valueText: {
         fontSize: 16,

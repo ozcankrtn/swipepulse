@@ -87,10 +87,6 @@ export default function HomeScreen() {
         }
     }, [currentCategory, setArticles, setError, setLoading]);
 
-    useEffect(() => {
-        initialize();
-    }, [initialize]);
-
     const isDeckEmpty = !isLoading && articles.length > 0 && currentIndex >= articles.length;
     const hasArticles = articles.length > 0;
 

@@ -254,6 +254,14 @@ export default function OnboardingScreen() {
                     >
                         {currentSlide.hook}
                     </Animated.Text>
+                    {activeIndex === 0 && (
+                        <Animated.Text
+                            entering={FadeInDown.delay(50).duration(600)}
+                            style={styles.tagline}
+                        >
+                            The anti-doomscroll news app.
+                        </Animated.Text>
+                    )}
                     <Animated.Text
                         key={`title-${activeIndex}`}
                         entering={FadeInDown.delay(100).duration(600)}
@@ -340,6 +348,13 @@ const styles = StyleSheet.create({
         color: '#4FC3F7',
         marginBottom: 12,
         textTransform: 'uppercase',
+    },
+    tagline: {
+        fontSize: 11,
+        color: 'rgba(255,255,255,0.4)',
+        letterSpacing: 1,
+        marginBottom: 12,
+        marginTop: -8,
     },
     title: {
         fontSize: 34,

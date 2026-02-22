@@ -4,6 +4,7 @@ import { StyleSheet } from 'react-native';
 import { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SplashScreen from 'expo-splash-screen';
+import { useFeedStore } from '../store/feedStore';
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync().catch(() => { });
@@ -23,6 +24,9 @@ export default function RootLayout() {
 
                 const done = await AsyncStorage.getItem('newsswipe_onboarding_done');
                 setOnboardingStatus(done);
+
+                // Initialize store (auth, bookmarks, etc.)
+                await useFeedStore.getState().initialize();
             } catch (e) {
                 console.error('Failed to load onboarding status', e);
                 setOnboardingStatus('false');
