@@ -20,11 +20,11 @@ interface FeedState {
     currentIndex: number;
     isLoading: boolean;
     error: string | null;
-    currentCategory: 'news' | 'culture' | 'sport' | 'technology';
-    defaultCategory: 'news' | 'culture' | 'sport' | 'technology';
+    currentCategory: 'all' | 'news' | 'culture' | 'sport' | 'technology';
+    defaultCategory: 'all' | 'news' | 'culture' | 'sport' | 'technology';
     seenArticleIds: Record<string, Set<string>>;
-    setCategory: (category: 'news' | 'culture' | 'sport' | 'technology') => void;
-    setDefaultCategory: (category: 'news' | 'culture' | 'sport' | 'technology') => Promise<void>;
+    setCategory: (category: 'all' | 'news' | 'culture' | 'sport' | 'technology') => void;
+    setDefaultCategory: (category: 'all' | 'news' | 'culture' | 'sport' | 'technology') => Promise<void>;
     setArticles: (articles: Article[]) => void;
     swipeRight: () => void;
     swipeLeft: () => void;
@@ -76,9 +76,10 @@ export const useFeedStore = create<FeedState>((set, get) => ({
     currentIndex: 0,
     isLoading: false,
     error: null,
-    currentCategory: 'news',
-    defaultCategory: 'news',
+    currentCategory: 'all',
+    defaultCategory: 'all',
     seenArticleIds: {
+        all: new Set(),
         news: new Set(),
         culture: new Set(),
         sport: new Set(),
@@ -129,6 +130,7 @@ export const useFeedStore = create<FeedState>((set, get) => ({
     })),
     clearAllSeen: () => set({
         seenArticleIds: {
+            all: new Set(),
             news: new Set(),
             culture: new Set(),
             sport: new Set(),

@@ -24,6 +24,7 @@ import {
 import { useFeedStore } from '../store/feedStore';
 
 const CATEGORY_OPTIONS = [
+    { id: 'all', label: 'All' },
     { id: 'news', label: 'News' },
     { id: 'culture', label: 'Culture' },
     { id: 'sport', label: 'Sport' },

@@ -28,6 +28,7 @@ import SkeletonCard from '../components/SkeletonCard';
 import { useNetworkStatus } from '../hooks/useNetworkStatus';
 
 const CATEGORIES = [
+    { id: 'all', label: 'All' },
     { id: 'news', label: 'News' },
     { id: 'culture', label: 'Culture' },
     { id: 'sport', label: 'Sport' },
@@ -41,8 +42,13 @@ async function fetchArticles(category: string, seenIds: Set<string>): Promise<Ar
         .select(
             'id, title, image_url, article_url, source_name, source_logo_url, category, published_at, is_active',
         )
-        .eq('is_active', true)
-        .eq('category', category)
+        .eq('is_active', true);
+
+    if (category !== 'all') {
+        query = query.eq('category', category);
+    }
+
+    query = query
         .order('published_at', { ascending: false })
         .limit(30);
 
