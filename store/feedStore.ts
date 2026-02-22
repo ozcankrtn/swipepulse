@@ -143,7 +143,7 @@ export const useFeedStore = create<FeedState>((set, get) => ({
             ? state.bookmarks.filter((b) => b.id !== article.id)
             : [...state.bookmarks, article];
 
-        AsyncStorage.setItem('swipepulse_bookmarks', JSON.stringify(newBookmarks)).catch((err) =>
+        AsyncStorage.setItem('newsswipe_bookmarks', JSON.stringify(newBookmarks)).catch((err) =>
             console.warn('Failed to save bookmarks:', err)
         );
 
@@ -154,7 +154,7 @@ export const useFeedStore = create<FeedState>((set, get) => ({
     },
     loadBookmarks: async () => {
         try {
-            const data = await AsyncStorage.getItem('swipepulse_bookmarks');
+            const data = await AsyncStorage.getItem('newsswipe_bookmarks');
             if (data) {
                 set({ bookmarks: JSON.parse(data) });
             }
@@ -164,7 +164,7 @@ export const useFeedStore = create<FeedState>((set, get) => ({
     },
     clearBookmarks: async () => {
         try {
-            await AsyncStorage.removeItem('swipepulse_bookmarks');
+            await AsyncStorage.removeItem('newsswipe_bookmarks');
             set({ bookmarks: [] });
         } catch (err) {
             console.warn('Failed to clear bookmarks:', err);
@@ -174,7 +174,7 @@ export const useFeedStore = create<FeedState>((set, get) => ({
         try {
             const [defCat, bookmarksData] = await Promise.all([
                 AsyncStorage.getItem('default_category'),
-                AsyncStorage.getItem('swipepulse_bookmarks')
+                AsyncStorage.getItem('newsswipe_bookmarks')
             ]);
 
             const updates: Partial<FeedState> = {};

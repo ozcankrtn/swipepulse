@@ -169,7 +169,7 @@ export default function SettingsScreen() {
                             <Text style={styles.rowLabel}>Data Privacy</Text>
                         </View>
                         <Text style={styles.privacyText}>
-                            SwipePulse does not collect personal data. Swipe interactions are stored anonymously.
+                            NewsSwipe does not collect personal data. Swipe interactions are stored anonymously.
                         </Text>
                     </View>
                 </View>

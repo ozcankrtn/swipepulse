@@ -18,7 +18,10 @@ export default function RootLayout() {
     useEffect(() => {
         async function checkOnboarding() {
             try {
-                const done = await AsyncStorage.getItem('onboarding_done');
+                // For testing: reset onboarding
+                await AsyncStorage.removeItem('newsswipe_onboarding_done');
+
+                const done = await AsyncStorage.getItem('newsswipe_onboarding_done');
                 setOnboardingStatus(done);
             } catch (e) {
                 console.error('Failed to load onboarding status', e);

@@ -155,7 +155,7 @@ export default function HomeScreen() {
                                 <Flame size={22} color="#ffffff" strokeWidth={2} />
                             </Pressable>
                         </View>
-                        <Text style={styles.logo}>SwipePulse</Text>
+                        <Text style={styles.logo}>NewsSwipe</Text>
                         <View style={styles.headerRight}>
                             <Pressable
                                 style={styles.headerBookmark}

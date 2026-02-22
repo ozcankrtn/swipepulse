@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "SwipePulse",
-    "slug": "swipepulse",
+    "name": "NewsSwipe",
+    "slug": "newsswipe",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "scheme": "swipepulse",
+    "scheme": "newsswipe",
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/splash.png",
@@ -14,14 +14,14 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.swipepulse.app"
+      "bundleIdentifier": "com.newsswipe.app"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#0a0a0a"
       },
-      "package": "com.swipepulse.app"
+      "package": "com.newsswipe.app"
     },
     "web": {
       "bundler": "metro",

@@ -190,7 +190,7 @@ const SLIDES = [
         id: 3,
         hook: "YOUR WORLD. YOUR RULES.",
         title: "Pick Your Universe",
-        subtitle: "From breaking news to tech breakthroughs — filter your world in one tap.",
+        subtitle: "From breaking news to tech breakthroughs — stay informed in under 5 minutes a day.",
         visual: <Slide3Visual />,
     },
 ];
@@ -210,7 +210,7 @@ export default function OnboardingScreen() {
 
     const handleComplete = async () => {
         try {
-            await AsyncStorage.setItem('onboarding_done', 'true');
+            await AsyncStorage.setItem('newsswipe_onboarding_done', 'true');
             router.replace('/');
         } catch (e) {
             console.error('Failed to save onboarding status', e);

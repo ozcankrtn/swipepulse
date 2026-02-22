@@ -1,5 +1,5 @@
 -- =============================================================
--- SwipePulse — Initial Database Schema
+-- NewsSwipe — Initial Database Schema
 -- Migration: 20260221000000_initial_schema.sql
 -- Run this in the Supabase SQL editor (or via supabase db push)
 -- =============================================================
