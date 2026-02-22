@@ -81,12 +81,35 @@ export default function HomeScreen() {
         initialize();
     }, [initialize]);
 
+    const isDeckEmpty = !isLoading && articles.length > 0 && currentIndex >= articles.length;
+    const hasArticles = articles.length > 0;
+
     useEffect(() => {
         loadFeed();
     }, [currentCategory, loadFeed]);
 
-    const isDeckEmpty = !isLoading && articles.length > 0 && currentIndex >= articles.length;
-    const hasArticles = articles.length > 0;
+    const progress = useSharedValue(0);
+
+    useEffect(() => {
+        // Reset progress immediately when category changes
+        progress.value = 0;
+    }, [currentCategory, progress]);
+
+    useEffect(() => {
+        if (articles.length > 0) {
+            const target = isDeckEmpty ? 100 : (currentIndex / articles.length) * 100;
+            progress.value = withTiming(target, { duration: 300 });
+        } else if (isDeckEmpty) {
+            progress.value = withTiming(100, { duration: 300 });
+        } else {
+            progress.value = 0;
+        }
+    }, [currentIndex, articles.length, isDeckEmpty, progress]);
+
+    const progressBarStyle = useAnimatedStyle(() => ({
+        width: `${progress.value}%`,
+    }));
+
     const remainingArticles = articles.slice(currentIndex);
 
     return (
@@ -109,11 +132,6 @@ export default function HomeScreen() {
                         </Pressable>
                         <Text style={styles.logo}>SwipePulse</Text>
                         <View style={styles.headerRight}>
-                            <Text style={styles.subInfo}>
-                                {hasArticles && !isDeckEmpty
-                                    ? `${Math.max(0, articles.length - currentIndex)} left`
-                                    : ''}
-                            </Text>
                             <Pressable
                                 style={styles.headerBookmark}
                                 onPress={() => router.push('/bookmarks')}
@@ -149,6 +167,11 @@ export default function HomeScreen() {
                                 );
                             })}
                         </ScrollView>
+                    </View>
+
+                    {/* Progress Bar */}
+                    <View style={styles.progressBarContainer}>
+                        <Animated.View style={[styles.progressBarFill, progressBarStyle]} />
                     </View>
                 </BlurView>
                 <LinearGradient
@@ -271,15 +294,19 @@ const styles = StyleSheet.create({
         color: '#ffffff',
         letterSpacing: -0.8,
     },
-    subInfo: {
-        fontSize: 13,
-        color: '#6366f1',
-        fontWeight: '600',
-    },
     headerRight: {
         flexDirection: 'row',
         alignItems: 'center',
         gap: 16,
+    },
+    progressBarContainer: {
+        height: 2,
+        width: '100%',
+        backgroundColor: 'rgba(255,255,255,0.08)',
+    },
+    progressBarFill: {
+        height: '100%',
+        backgroundColor: '#ffffff',
     },
     headerBookmark: {
         opacity: 0.9,

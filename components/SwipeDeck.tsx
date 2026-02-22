@@ -9,6 +9,7 @@ import Animated, {
     useSharedValue,
     withSpring,
     withTiming,
+    withSequence,
     runOnJS,
     interpolate,
     Extrapolation,
@@ -18,6 +19,7 @@ import {
     GestureDetector,
 } from 'react-native-gesture-handler';
 import * as WebBrowser from 'expo-web-browser';
+import * as Haptics from 'expo-haptics';
 import type { Article } from '../store/feedStore';
 import { X, Check } from 'lucide-react-native';
 import SwipeCard, { CARD_WIDTH, CARD_HEIGHT } from './SwipeCard';
@@ -137,6 +139,8 @@ function DraggableCard({
     const translateX = useSharedValue(0);
     const translateY = useSharedValue(0);
     const isFlying = useRef(false);
+    const flashOpacity = useSharedValue(0);
+    const flashColor = useSharedValue('transparent');
 
     const openArticle = useCallback(
         async (a: Article) => {
@@ -154,21 +158,37 @@ function DraggableCard({
 
     const swipeOffLeft = useCallback(() => {
         isFlying.current = true;
+        // Trigger haptics and flash
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        flashColor.value = 'rgba(255, 68, 68, 0.15)';
+        flashOpacity.value = withSequence(
+            withTiming(0.8, { duration: 150 }),
+            withTiming(0, { duration: 150 })
+        );
+
         translateX.value = withSpring(
             -SCREEN_WIDTH * 1.5,
             SNAP_SPRING_CONFIG,
             () => runOnJS(onSwipeLeft)(),
         );
-    }, [onSwipeLeft, translateX]);
+    }, [onSwipeLeft, translateX, flashColor, flashOpacity]);
 
     const swipeOffRight = useCallback(() => {
         isFlying.current = true;
+        // Trigger haptics and flash
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        flashColor.value = 'rgba(68, 255, 136, 0.15)';
+        flashOpacity.value = withSequence(
+            withTiming(0.8, { duration: 150 }),
+            withTiming(0, { duration: 150 })
+        );
+
         translateX.value = withSpring(
             SCREEN_WIDTH * 1.5,
             SNAP_SPRING_CONFIG,
             () => runOnJS(openArticle)(article),
         );
-    }, [article, openArticle, translateX]);
+    }, [article, openArticle, translateX, flashColor, flashOpacity]);
 
     const snapBack = useCallback(() => {
         translateX.value = withSpring(0, SPRING_CONFIG);
@@ -234,6 +254,12 @@ function DraggableCard({
         return { opacity };
     });
 
+    // Flash overlay style
+    const flashStyle = useAnimatedStyle(() => ({
+        backgroundColor: flashColor.value,
+        opacity: flashOpacity.value,
+    }));
+
     return (
         <GestureDetector gesture={pan}>
             <Animated.View style={[styles.cardWrapper, animatedStyle, { zIndex: 10 }]}>
@@ -260,6 +286,12 @@ function DraggableCard({
                         <Animated.Text style={styles.readLabel}>READ</Animated.Text>
                     </View>
                 </Animated.View>
+
+                {/* Flash micro-animation overlay */}
+                <Animated.View
+                    style={[StyleSheet.absoluteFill, { borderRadius: 24, zIndex: 20 }, flashStyle]}
+                    pointerEvents="none"
+                />
             </Animated.View>
         </GestureDetector>
     );
