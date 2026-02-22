@@ -16,7 +16,7 @@ import { useFeedStore, type Article } from '../store/feedStore';
 import SwipeDeck from '../components/SwipeDeck';
 import { CARD_WIDTH, CARD_HEIGHT } from '../components/SwipeCard';
 import { useRouter } from 'expo-router';
-import { Bookmark, Settings, Flame } from 'lucide-react-native';
+import { Bookmark, Settings, Flame, WifiOff, AlertCircle } from 'lucide-react-native';
 import Animated, {
     useSharedValue,
     useAnimatedStyle,
@@ -25,6 +25,7 @@ import Animated, {
     FadeOut
 } from 'react-native-reanimated';
 import SkeletonCard from '../components/SkeletonCard';
+import { useNetworkStatus } from '../hooks/useNetworkStatus';
 
 const CATEGORIES = [
     { id: 'news', label: 'News' },
@@ -57,10 +58,13 @@ async function fetchArticles(category: string, seenIds: Set<string>): Promise<Ar
 
 // ── Screen ────────────────────────────────────────────────────────────────
 export default function HomeScreen() {
+    const { isConnected, isInternetReachable } = useNetworkStatus();
     const router = useRouter();
     const insets = useSafeAreaInsets();
     const { articles, currentIndex, isLoading, error, setArticles, setLoading, setError, swipeLeft, swipeRight, reset, currentCategory, setCategory, clearSeenForCategory, initialize } =
         useFeedStore();
+
+    const isOffline = isConnected === false;
 
     const loadFeed = useCallback(async () => {
         setLoading(true);
@@ -87,6 +91,13 @@ export default function HomeScreen() {
     useEffect(() => {
         loadFeed();
     }, [currentCategory, loadFeed]);
+
+    // Automatically retry when connection restored
+    useEffect(() => {
+        if (isConnected && error === 'Network request failed') {
+            loadFeed();
+        }
+    }, [isConnected, loadFeed, error]);
 
     const progress = useSharedValue(0);
 
@@ -215,12 +226,17 @@ export default function HomeScreen() {
                 {/* Error */}
                 {!isLoading && error && (
                     <View style={styles.centerState}>
-                        <Text style={styles.errorEmoji}>⚠️</Text>
-                        <Text style={styles.errorTitle}>Couldn't load feed</Text>
-                        <Text style={styles.errorMessage}>{error}</Text>
-                        <Pressable style={styles.retryButton} onPress={loadFeed}>
-                            <Text style={styles.retryText}>Try Again</Text>
-                        </Pressable>
+                        <View style={styles.errorCard}>
+                            <AlertCircle size={48} color="#ef4444" strokeWidth={1.5} />
+                            <Text style={styles.errorTitle}>Couldn't load news</Text>
+                            <Text style={styles.errorMessage}>Something went wrong. Please try again.</Text>
+                            <Pressable
+                                style={styles.retryButton}
+                                onPress={loadFeed}
+                            >
+                                <Text style={styles.retryText}>Try Again</Text>
+                            </Pressable>
+                        </View>
                     </View>
                 )}
 
@@ -263,6 +279,27 @@ export default function HomeScreen() {
                     </Animated.View>
                 )}
             </View>
+
+            {/* ── Offline Overlay ── */}
+            {isOffline && (
+                <Animated.View
+                    entering={FadeIn}
+                    exiting={FadeOut}
+                    style={[StyleSheet.absoluteFill, styles.offlineOverlay]}
+                >
+                    <View style={styles.offlineContent}>
+                        <WifiOff size={64} color="#ffffff" strokeWidth={1.5} />
+                        <Text style={styles.offlineTitle}>No Internet Connection</Text>
+                        <Text style={styles.offlineSubtext}>Check your connection and try again</Text>
+                        <Pressable
+                            style={styles.offlineRetryButton}
+                            onPress={loadFeed}
+                        >
+                            <Text style={styles.offlineRetryText}>Retry</Text>
+                        </Pressable>
+                    </View>
+                </Animated.View>
+            )}
         </View>
     );
 }
@@ -413,16 +450,64 @@ const styles = StyleSheet.create({
         lineHeight: 20,
     },
     retryButton: {
-        marginTop: 8,
-        backgroundColor: '#6366f1',
-        paddingVertical: 14,
-        paddingHorizontal: 40,
-        borderRadius: 50,
+        marginTop: 12,
+        backgroundColor: 'rgba(255,255,255,0.05)',
+        paddingVertical: 12,
+        paddingHorizontal: 32,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.1)',
     },
     retryText: {
         color: '#fff',
-        fontWeight: '700',
+        fontWeight: '600',
         fontSize: 15,
+    },
+    errorCard: {
+        backgroundColor: 'rgba(255,255,255,0.03)',
+        padding: 32,
+        borderRadius: 24,
+        alignItems: 'center',
+        width: CARD_WIDTH,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.05)',
+    },
+
+    // ── Offline Overlay
+    offlineOverlay: {
+        backgroundColor: 'rgba(0,0,0,0.85)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1000,
+    },
+    offlineContent: {
+        alignItems: 'center',
+        paddingHorizontal: 40,
+    },
+    offlineTitle: {
+        color: '#ffffff',
+        fontSize: 22,
+        fontWeight: '800',
+        marginTop: 24,
+    },
+    offlineSubtext: {
+        color: 'rgba(255,255,255,0.6)',
+        fontSize: 16,
+        textAlign: 'center',
+        marginTop: 8,
+        lineHeight: 22,
+    },
+    offlineRetryButton: {
+        marginTop: 32,
+        backgroundColor: '#ffffff',
+        paddingVertical: 14,
+        paddingHorizontal: 48,
+        borderRadius: 50,
+    },
+    offlineRetryText: {
+        color: '#000000',
+        fontWeight: '700',
+        fontSize: 16,
     },
 
     // ── All caught up state

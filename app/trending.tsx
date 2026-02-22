@@ -11,7 +11,7 @@ import {
     ActivityIndicator,
 } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
-import { Flame, ChevronLeft } from 'lucide-react-native';
+import { Flame, ChevronLeft, AlertCircle } from 'lucide-react-native';
 import * as WebBrowser from 'expo-web-browser';
 import { supabase } from '../lib/supabase';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -37,9 +37,12 @@ export default function TrendingScreen() {
     const [articles, setArticles] = useState<TrendingArticle[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const router = useRouter();
 
     const fetchTrending = useCallback(async () => {
+        setIsLoading(true);
+        setError(null);
         try {
             const { data, error } = await supabase
                 .from('trending_articles')
@@ -50,6 +53,7 @@ export default function TrendingScreen() {
             setArticles((data ?? []) as TrendingArticle[]);
         } catch (err) {
             console.error('Error fetching trending:', err);
+            setError(err instanceof Error ? err.message : 'Something went wrong');
         } finally {
             setIsLoading(false);
             setIsRefreshing(false);
@@ -157,6 +161,20 @@ export default function TrendingScreen() {
 
             {isLoading ? (
                 renderSkeleton()
+            ) : error ? (
+                <View style={styles.centerState}>
+                    <View style={styles.errorCard}>
+                        <AlertCircle size={48} color="#ef4444" strokeWidth={1.5} />
+                        <Text style={styles.errorTitle}>Couldn't load news</Text>
+                        <Text style={styles.errorMessage}>Something went wrong. Please try again.</Text>
+                        <Pressable
+                            style={styles.retryButton}
+                            onPress={fetchTrending}
+                        >
+                            <Text style={styles.retryText}>Try Again</Text>
+                        </Pressable>
+                    </View>
+                </View>
             ) : (
                 <FlatList
                     data={articles}
@@ -260,5 +278,47 @@ const styles = StyleSheet.create({
     skeletonContainer: {
         flex: 1,
         paddingVertical: 12,
+    },
+    centerState: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 32,
+    },
+    errorCard: {
+        backgroundColor: 'rgba(255,255,255,0.03)',
+        padding: 32,
+        borderRadius: 24,
+        alignItems: 'center',
+        width: '100%',
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.05)',
+    },
+    errorTitle: {
+        fontSize: 22,
+        fontWeight: '800',
+        color: '#ffffff',
+        marginTop: 16,
+    },
+    errorMessage: {
+        fontSize: 14,
+        color: '#888',
+        textAlign: 'center',
+        lineHeight: 20,
+        marginTop: 8,
+    },
+    retryButton: {
+        marginTop: 24,
+        backgroundColor: 'rgba(255,255,255,0.05)',
+        paddingVertical: 12,
+        paddingHorizontal: 32,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.1)',
+    },
+    retryText: {
+        color: '#fff',
+        fontWeight: '600',
+        fontSize: 15,
     },
 });
