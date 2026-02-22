@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Pressable, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Dimensions, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -15,6 +15,8 @@ import Animated, {
     FadeIn,
     FadeInDown,
 } from 'react-native-reanimated';
+
+const LOGO_IMG = require('../assets/icon.png');
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -247,6 +249,14 @@ export default function OnboardingScreen() {
 
                 {/* Text Area */}
                 <View style={styles.textWrapper}>
+                    {activeIndex === 0 && (
+                        <Animated.View
+                            entering={FadeInDown.duration(800)}
+                            style={styles.logoWrapper}
+                        >
+                            <Image source={LOGO_IMG} style={styles.logoImage} />
+                        </Animated.View>
+                    )}
                     <Animated.Text
                         key={`hook-${activeIndex}`}
                         entering={FadeInDown.duration(600)}
@@ -340,6 +350,14 @@ const styles = StyleSheet.create({
     },
     textWrapper: {
         alignItems: 'flex-start',
+    },
+    logoWrapper: {
+        marginBottom: 20,
+    },
+    logoImage: {
+        width: 64,
+        height: 64,
+        borderRadius: 14,
     },
     hook: {
         fontSize: 11,

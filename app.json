@@ -21,7 +21,8 @@
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#0a0a0a"
       },
-      "package": "com.newsswipe.app"
+      "package": "com.ozcankrtn.newsswipe",
+      "versionCode": 1
     },
     "web": {
       "bundler": "metro",
@@ -34,6 +35,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "e04aee71-3906-45be-bc9b-b4c845b9ec0b"
+      }
     }
   }
 }

@@ -10,13 +10,16 @@ import {
     Platform,
     TouchableWithoutFeedback,
     Keyboard,
-    StatusBar
+    StatusBar,
+    Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { supabase } from '../lib/supabase';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Mail, Lock, ChevronRight } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+
+const LOGO_IMG = require('../assets/icon.png');
 
 export default function AuthScreen() {
     const router = useRouter();
@@ -78,6 +81,7 @@ export default function AuthScreen() {
                     <View style={[styles.innerContent, { paddingTop: insets.top + 40 }]}>
                         {/* Header */}
                         <View style={styles.header}>
+                            <Image source={LOGO_IMG} style={styles.logoImage} />
                             <Text style={styles.logoText}>NewsSwipe</Text>
                             <Text style={styles.tagline}>Stay informed, one swipe at a time.</Text>
                         </View>
@@ -193,15 +197,21 @@ const styles = StyleSheet.create({
         marginBottom: 48,
     },
     logoText: {
-        fontSize: 36,
+        fontSize: 32,
         fontWeight: '900',
         color: '#ffffff',
         letterSpacing: -1,
     },
+    logoImage: {
+        width: 80,
+        height: 80,
+        borderRadius: 18,
+        marginBottom: 16,
+    },
     tagline: {
         fontSize: 16,
         color: '#888',
-        marginTop: 8,
+        marginTop: 4,
     },
     tabsContainer: {
         flexDirection: 'row',

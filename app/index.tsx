@@ -6,6 +6,7 @@ import {
     Pressable,
     StatusBar,
     ScrollView,
+    Image,
 } from 'react-native';
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -26,6 +27,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import SkeletonCard from '../components/SkeletonCard';
 import { useNetworkStatus } from '../hooks/useNetworkStatus';
+
+const LOGO_IMG = require('../assets/icon.png');
 
 const CATEGORIES = [
     { id: 'all', label: 'All' },
@@ -151,7 +154,10 @@ export default function HomeScreen() {
                                 <Flame size={22} color="#ffffff" strokeWidth={2} />
                             </Pressable>
                         </View>
-                        <Text style={styles.logo}>NewsSwipe</Text>
+                        <View style={styles.logoContainer}>
+                            <Image source={LOGO_IMG} style={styles.headerLogo} />
+                            <Text style={styles.logo}>NewsSwipe</Text>
+                        </View>
                         <View style={styles.headerRight}>
                             <Pressable
                                 style={styles.headerBookmark}
@@ -336,10 +342,20 @@ const styles = StyleSheet.create({
         height: 20,
     },
     logo: {
-        fontSize: 26,
+        fontSize: 20,
         fontWeight: '900',
         color: '#ffffff',
-        letterSpacing: -0.8,
+        letterSpacing: -0.5,
+    },
+    logoContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    headerLogo: {
+        width: 32,
+        height: 32,
+        borderRadius: 8,
     },
     headerLeft: {
         flexDirection: 'row',
