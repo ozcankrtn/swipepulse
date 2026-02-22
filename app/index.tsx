@@ -9,7 +9,9 @@ import {
     ScrollView,
 } from 'react-native';
 
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import { supabase } from '../lib/supabase';
 import { useFeedStore, type Article } from '../store/feedStore';
 import SwipeDeck from '../components/SwipeDeck';
@@ -48,6 +50,7 @@ async function fetchArticles(category: string, seenIds: Set<string>): Promise<Ar
 // ── Screen ────────────────────────────────────────────────────────────────
 export default function HomeScreen() {
     const router = useRouter();
+    const insets = useSafeAreaInsets();
     const { articles, currentIndex, isLoading, error, setArticles, setLoading, setError, swipeLeft, swipeRight, reset, currentCategory, setCategory, clearSeenForCategory, initialize } =
         useFeedStore();
 
@@ -79,59 +82,71 @@ export default function HomeScreen() {
     const remainingArticles = articles.slice(currentIndex);
 
     return (
-        <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.container}>
             <StatusBar barStyle="light-content" />
 
-            {/* ── Header ── */}
-            <View style={styles.header}>
-                <Pressable
-                    style={styles.headerIcon}
-                    onPress={() => router.push('/settings')}
+            {/* ── Header with Blur effect ── */}
+            <View style={styles.headerWrapper}>
+                <BlurView
+                    intensity={95}
+                    tint="dark"
+                    style={[styles.blurHeader, { paddingTop: insets.top }]}
                 >
-                    <Settings size={24} color="#ffffff" strokeWidth={2.5} />
-                </Pressable>
-                <Text style={styles.logo}>SwipePulse</Text>
-                <View style={styles.headerRight}>
-                    <Text style={styles.subInfo}>
-                        {hasArticles && !isDeckEmpty
-                            ? `${Math.max(0, articles.length - currentIndex)} left`
-                            : ''}
-                    </Text>
-                    <Pressable
-                        style={styles.headerBookmark}
-                        onPress={() => router.push('/bookmarks')}
-                    >
-                        <Bookmark size={24} color="#ffffff" strokeWidth={2.5} />
-                    </Pressable>
-                </View>
-            </View>
-
-            {/* ── Category Tabs ── */}
-            <View style={styles.tabsContainer}>
-                <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.tabsContent}
-                >
-                    {CATEGORIES.map((cat) => {
-                        const isActive = currentCategory === cat.id;
-                        return (
+                    <View style={styles.header}>
+                        <Pressable
+                            style={styles.headerIcon}
+                            onPress={() => router.push('/settings')}
+                        >
+                            <Settings size={24} color="#ffffff" strokeWidth={2.5} />
+                        </Pressable>
+                        <Text style={styles.logo}>SwipePulse</Text>
+                        <View style={styles.headerRight}>
+                            <Text style={styles.subInfo}>
+                                {hasArticles && !isDeckEmpty
+                                    ? `${Math.max(0, articles.length - currentIndex)} left`
+                                    : ''}
+                            </Text>
                             <Pressable
-                                key={cat.id}
-                                style={[styles.tab, isActive && styles.tabActive]}
-                                onPress={() => {
-                                    if (!isActive) {
-                                        setCategory(cat.id);
-                                    }
-                                }}
+                                style={styles.headerBookmark}
+                                onPress={() => router.push('/bookmarks')}
                             >
-                                <Text style={[styles.tabText, isActive && styles.tabTextActive]}>
-                                    {cat.label}
-                                </Text>
+                                <Bookmark size={24} color="#ffffff" strokeWidth={2.5} />
                             </Pressable>
-                        );
-                    })}
-                </ScrollView>
+                        </View>
+                    </View>
+
+                    {/* ── Category Tabs ── */}
+                    <View style={styles.tabsContainer}>
+                        <ScrollView
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            contentContainerStyle={styles.tabsContent}
+                        >
+                            {CATEGORIES.map((cat) => {
+                                const isActive = currentCategory === cat.id;
+                                return (
+                                    <Pressable
+                                        key={cat.id}
+                                        style={[styles.tab, isActive && styles.tabActive]}
+                                        onPress={() => {
+                                            if (!isActive) {
+                                                setCategory(cat.id);
+                                            }
+                                        }}
+                                    >
+                                        <Text style={[styles.tabText, isActive && styles.tabTextActive]}>
+                                            {cat.label}
+                                        </Text>
+                                    </Pressable>
+                                );
+                            })}
+                        </ScrollView>
+                    </View>
+                </BlurView>
+                <LinearGradient
+                    colors={['rgba(0,0,0,0.8)', 'transparent']}
+                    style={styles.headerGradient}
+                />
             </View>
 
             {/* ── Content area ── */}
@@ -191,7 +206,7 @@ export default function HomeScreen() {
                     />
                 )}
             </View>
-        </SafeAreaView>
+        </View>
     );
 }
 
@@ -206,8 +221,23 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 24,
-        paddingTop: 8,
+        paddingTop: 12,
         paddingBottom: 16,
+    },
+    headerWrapper: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 100,
+    },
+    blurHeader: {
+        borderBottomWidth: 0.5,
+        borderBottomColor: 'rgba(255,255,255,0.08)',
+        backgroundColor: 'rgba(0,0,0,0.3)', // Added a bit of transparency to allow blur to show through more clearly
+    },
+    headerGradient: {
+        height: 20,
     },
     logo: {
         fontSize: 26,
@@ -240,6 +270,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         paddingBottom: 32,
+        paddingTop: 140, // Changed from marginTop to allow blur depth
     },
 
     // ── Category Tabs

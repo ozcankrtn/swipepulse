@@ -19,6 +19,7 @@ import {
 } from 'react-native-gesture-handler';
 import * as WebBrowser from 'expo-web-browser';
 import type { Article } from '../store/feedStore';
+import { X, Check } from 'lucide-react-native';
 import SwipeCard, { CARD_WIDTH, CARD_HEIGHT } from './SwipeCard';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -243,7 +244,10 @@ function DraggableCard({
                     style={[styles.swipeOverlay, styles.leftOverlay, leftIndicatorStyle]}
                     pointerEvents="none"
                 >
-                    <Animated.Text style={styles.skipLabel}>SKIP</Animated.Text>
+                    <View style={styles.overlayLabelContainer}>
+                        <X size={32} color="#FF4444" strokeWidth={3} />
+                        <Animated.Text style={styles.skipLabel}>SKIP</Animated.Text>
+                    </View>
                 </Animated.View>
 
                 {/* RIGHT swipe overlay */}
@@ -251,7 +255,10 @@ function DraggableCard({
                     style={[styles.swipeOverlay, styles.rightOverlay, rightIndicatorStyle]}
                     pointerEvents="none"
                 >
-                    <Animated.Text style={styles.readLabel}>READ</Animated.Text>
+                    <View style={styles.overlayLabelContainer}>
+                        <Check size={32} color="#44FF88" strokeWidth={3} />
+                        <Animated.Text style={styles.readLabel}>READ</Animated.Text>
+                    </View>
                 </Animated.View>
             </Animated.View>
         </GestureDetector>
@@ -278,27 +285,32 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     leftOverlay: {
-        backgroundColor: 'rgba(239, 68, 68, 0.55)',
+        backgroundColor: 'rgba(0, 0, 0, 0.4)',
     },
     rightOverlay: {
-        backgroundColor: 'rgba(34, 197, 94, 0.55)',
+        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    },
+    overlayLabelContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        borderRadius: 16,
+        gap: 12,
+        borderWidth: 1.5,
+        borderColor: 'rgba(255, 255, 255, 0.1)',
     },
     skipLabel: {
-        fontSize: 42,
-        fontWeight: '900',
-        color: '#fff',
-        letterSpacing: 4,
-        textShadowColor: 'rgba(0,0,0,0.4)',
-        textShadowOffset: { width: 0, height: 2 },
-        textShadowRadius: 8,
+        fontSize: 28,
+        fontWeight: '800',
+        color: '#FF4444',
+        letterSpacing: 2,
     },
     readLabel: {
-        fontSize: 42,
-        fontWeight: '900',
-        color: '#fff',
-        letterSpacing: 4,
-        textShadowColor: 'rgba(0,0,0,0.4)',
-        textShadowOffset: { width: 0, height: 2 },
-        textShadowRadius: 8,
+        fontSize: 28,
+        fontWeight: '800',
+        color: '#44FF88',
+        letterSpacing: 2,
     },
 });

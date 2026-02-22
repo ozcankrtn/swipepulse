@@ -17,15 +17,15 @@ import { useFeedStore, type Article } from '../store/feedStore';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-export const CARD_WIDTH = SCREEN_WIDTH - 32;
+export const CARD_WIDTH = SCREEN_WIDTH * 0.92;
 export const CARD_HEIGHT = SCREEN_HEIGHT * 0.72;
 
 // Category badge color map
 const CATEGORY_COLORS: Record<string, string> = {
-    news: '#E53935',
-    culture: '#8E24AA',
-    sport: '#1E88E5',
-    technology: '#00ACC1',
+    news: '#4FC3F7',
+    culture: '#CE93D8',
+    sport: '#A5D6A7',
+    technology: '#FFB74D',
 };
 
 interface SwipeCardProps {
@@ -71,8 +71,8 @@ function SwipeCard({ article, stackIndex }: SwipeCardProps) {
                     resizeMode="cover"
                 >
                     <LinearGradient
-                        colors={['transparent', 'rgba(0,0,0,0.25)', 'rgba(0,0,0,0.92)']}
-                        locations={[0.2, 0.55, 1]}
+                        colors={['transparent', 'transparent', 'rgba(0,0,0,0.7)', 'rgba(0,0,0,0.95)']}
+                        locations={[0, 0.35, 0.6, 1]}
                         style={styles.gradient}
                     >
                         <CardContent
@@ -126,37 +126,35 @@ function CardContent({ article, categoryColor }: CardContentProps) {
         <View style={styles.contentArea}>
             {/* Category badge */}
             {article.category && (
-                <View style={[styles.categoryBadge, { backgroundColor: categoryColor }]}>
-                    <Text style={styles.categoryText}>
+                <View style={[styles.categoryBadge, { backgroundColor: `${categoryColor}33` }]}>
+                    <Text style={[styles.categoryText, { color: categoryColor }]}>
                         {article.category.toUpperCase()}
                     </Text>
                 </View>
             )}
 
             {/* Title */}
-            <Text style={styles.title} numberOfLines={4}>
+            <Text style={styles.title} numberOfLines={3}>
                 {article.title}
             </Text>
 
             {/* Source row */}
             <View style={styles.sourceRow}>
-                {article.source_logo_url ? (
-                    <Image
-                        source={{ uri: article.source_logo_url }}
-                        style={styles.sourceLogo}
-                    />
-                ) : null}
-                <Text style={styles.sourceName} numberOfLines={1}>
-                    {article.source_name ?? 'Unknown Source'}
-                </Text>
+                <View style={styles.sourceInfo}>
+                    <View style={[styles.categoryDot, { backgroundColor: categoryColor }]} />
+                    {article.source_logo_url ? (
+                        <Image
+                            source={{ uri: article.source_logo_url }}
+                            style={styles.sourceLogo}
+                        />
+                    ) : null}
+                    <Text style={styles.sourceName} numberOfLines={1}>
+                        {article.source_name ?? 'Unknown Source'}
+                    </Text>
+                </View>
                 {formattedDate && (
                     <Text style={styles.dateText}>{formattedDate}</Text>
                 )}
-            </View>
-
-            {/* Hint label */}
-            <View style={styles.swipeHint}>
-                <Text style={styles.swipeHintText}>← Skip  ·  Read →</Text>
             </View>
         </View>
     );
@@ -185,13 +183,15 @@ const styles = StyleSheet.create({
         borderRadius: 24,
         overflow: 'hidden',
         backgroundColor: '#1a1a2e',
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.08)',
     },
     cardShadow: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 12 },
-        shadowOpacity: 0.5,
-        shadowRadius: 20,
-        elevation: 20,
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.4,
+        shadowRadius: 16,
+        elevation: 12,
     },
     image: {
         flex: 1,
@@ -232,57 +232,63 @@ const styles = StyleSheet.create({
     },
     contentArea: {
         paddingHorizontal: 24,
-        paddingBottom: 28,
-        gap: 10,
+        paddingBottom: 16,
+        gap: 12,
     },
     categoryBadge: {
         alignSelf: 'flex-start',
-        borderRadius: 6,
-        paddingHorizontal: 10,
-        paddingVertical: 4,
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
     },
     categoryText: {
-        fontSize: 10,
-        fontWeight: '800',
-        color: '#fff',
-        letterSpacing: 1.2,
+        fontSize: 11,
+        fontWeight: '700',
+        letterSpacing: 1,
     },
     title: {
         fontSize: 22,
-        fontWeight: '800',
+        fontWeight: '700',
         color: '#ffffff',
         lineHeight: 30,
-        letterSpacing: -0.3,
+        letterSpacing: -0.5,
+        textShadowColor: 'rgba(0,0,0,0.5)',
+        textShadowOffset: { width: 0, height: 1 },
+        textShadowRadius: 3,
     },
     sourceRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 8,
+        justifyContent: 'space-between',
+    },
+    sourceInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        flex: 1,
+    },
+    categoryDot: {
+        width: 6,
+        height: 6,
+        borderRadius: 3,
     },
     sourceLogo: {
-        width: 20,
-        height: 20,
+        width: 18,
+        height: 18,
         borderRadius: 4,
         backgroundColor: '#333',
     },
     sourceName: {
-        fontSize: 13,
-        color: 'rgba(255,255,255,0.75)',
-        fontWeight: '600',
+        fontSize: 12,
+        color: '#ffffff',
+        fontWeight: '500',
+        opacity: 0.75,
         flex: 1,
     },
     dateText: {
         fontSize: 12,
         color: 'rgba(255,255,255,0.5)',
-    },
-    swipeHint: {
-        alignSelf: 'center',
-        marginTop: 4,
-    },
-    swipeHintText: {
-        fontSize: 12,
-        color: 'rgba(255,255,255,0.35)',
-        letterSpacing: 0.5,
+        fontWeight: '500',
     },
 });
 
