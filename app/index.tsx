@@ -16,7 +16,7 @@ import { useFeedStore, type Article } from '../store/feedStore';
 import SwipeDeck from '../components/SwipeDeck';
 import { CARD_WIDTH, CARD_HEIGHT } from '../components/SwipeCard';
 import { useRouter } from 'expo-router';
-import { Bookmark, Settings } from 'lucide-react-native';
+import { Bookmark, Settings, Flame } from 'lucide-react-native';
 import Animated, {
     useSharedValue,
     useAnimatedStyle,
@@ -124,12 +124,20 @@ export default function HomeScreen() {
                     style={[styles.blurHeader, { paddingTop: insets.top }]}
                 >
                     <View style={styles.header}>
-                        <Pressable
-                            style={styles.headerIcon}
-                            onPress={() => router.push('/settings')}
-                        >
-                            <Settings size={24} color="#ffffff" strokeWidth={2.5} />
-                        </Pressable>
+                        <View style={styles.headerLeft}>
+                            <Pressable
+                                style={styles.headerIcon}
+                                onPress={() => router.push('/settings')}
+                            >
+                                <Settings size={22} color="#ffffff" strokeWidth={2} />
+                            </Pressable>
+                            <Pressable
+                                style={styles.headerIcon}
+                                onPress={() => router.push('/trending')}
+                            >
+                                <Flame size={22} color="#ffffff" strokeWidth={2} />
+                            </Pressable>
+                        </View>
                         <Text style={styles.logo}>SwipePulse</Text>
                         <View style={styles.headerRight}>
                             <Pressable
@@ -293,6 +301,11 @@ const styles = StyleSheet.create({
         fontWeight: '900',
         color: '#ffffff',
         letterSpacing: -0.8,
+    },
+    headerLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
     },
     headerRight: {
         flexDirection: 'row',
