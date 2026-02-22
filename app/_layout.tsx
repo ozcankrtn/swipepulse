@@ -35,7 +35,9 @@ export default function RootLayout() {
         // Wait until navigation state is initialized and we have checked AsyncStorage
         if (!isReady || !rootNavigationState?.key) return;
 
-        if (onboardingStatus !== 'true') {
+        if (onboardingStatus === 'true') {
+            router.replace('/');
+        } else {
             router.replace('/onboarding');
         }
 
