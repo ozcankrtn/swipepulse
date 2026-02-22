@@ -2,7 +2,6 @@ import React, { useEffect, useCallback } from 'react';
 import {
     View,
     Text,
-    ActivityIndicator,
     StyleSheet,
     Pressable,
     StatusBar,
@@ -15,8 +14,17 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { supabase } from '../lib/supabase';
 import { useFeedStore, type Article } from '../store/feedStore';
 import SwipeDeck from '../components/SwipeDeck';
+import { CARD_WIDTH, CARD_HEIGHT } from '../components/SwipeCard';
 import { useRouter } from 'expo-router';
 import { Bookmark, Settings } from 'lucide-react-native';
+import Animated, {
+    useSharedValue,
+    useAnimatedStyle,
+    withTiming,
+    FadeIn,
+    FadeOut
+} from 'react-native-reanimated';
+import SkeletonCard from '../components/SkeletonCard';
 
 const CATEGORIES = [
     { id: 'news', label: 'News' },
@@ -154,10 +162,23 @@ export default function HomeScreen() {
 
                 {/* Loading */}
                 {isLoading && (
-                    <View style={styles.centerState}>
-                        <ActivityIndicator size="large" color="#6366f1" />
+                    <Animated.View
+                        entering={FadeIn.duration(300)}
+                        exiting={FadeOut.duration(300)}
+                        style={styles.deckContainer}
+                    >
+                        <View style={styles.skeletonStack}>
+                            {/* Background card */}
+                            <View style={[styles.skeletonWrapper, { transform: [{ scale: 0.955 }, { translateY: 14 }], opacity: 0.5 }]}>
+                                <SkeletonCard />
+                            </View>
+                            {/* Foreground card */}
+                            <View style={styles.skeletonWrapper}>
+                                <SkeletonCard />
+                            </View>
+                        </View>
                         <Text style={styles.loadingText}>Fetching your feed…</Text>
-                    </View>
+                    </Animated.View>
                 )}
 
                 {/* Error */}
@@ -195,15 +216,20 @@ export default function HomeScreen() {
 
                 {/* Deck */}
                 {!isLoading && !error && !isDeckEmpty && hasArticles && (
-                    <SwipeDeck
-                        articles={articles}
-                        currentIndex={currentIndex}
-                        onSwipeLeft={swipeLeft}
-                        onSwipeRight={(article) => {
-                            // onSwipeRight internally opens the browser and then calls this
-                            swipeRight();
-                        }}
-                    />
+                    <Animated.View
+                        entering={FadeIn.duration(300)}
+                        style={styles.deckContainer}
+                    >
+                        <SwipeDeck
+                            articles={articles}
+                            currentIndex={currentIndex}
+                            onSwipeLeft={swipeLeft}
+                            onSwipeRight={(article) => {
+                                // onSwipeRight internally opens the browser and then calls this
+                                swipeRight();
+                            }}
+                        />
+                    </Animated.View>
                 )}
             </View>
         </View>
@@ -306,11 +332,28 @@ const styles = StyleSheet.create({
         gap: 12,
     },
 
+    // ── Deck container for centered cards
+    deckContainer: {
+        width: '100%',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    skeletonStack: {
+        width: CARD_WIDTH,
+        height: CARD_HEIGHT + 20, // Plus some room for the stack offset
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 20,
+    },
+    skeletonWrapper: {
+        position: 'absolute',
+    },
+
     // ── Loading
     loadingText: {
         fontSize: 15,
         color: '#888',
-        marginTop: 12,
+        marginTop: 24,
     },
 
     // ── Error state
